@@ -683,3 +683,52 @@ If empathy implementation/qualification resumes:
 8. keep design, implementation, provider/install, behavioral observation, causal qualification, and release state separate.
 
 Do not recreate a permanent Yang chat to do this. Dispatch Yang as an ephemeral worker through the current Bus route when adversarial review is needed.
+
+---
+
+## 15. Exodus reconciliation — later legacy evidence and concurrent durable work
+
+The 2026-09-19 Exodus audit discovered concurrent empathy evacuation work after this historical corpus was first staged. This section preserves the reconciliation without silently treating concurrent drafts as accepted source.
+
+### Later legacy coordination evidence
+
+A separate fresh historical-coordination read recorded in empathy Draft PR #3 found:
+
+- sequence 4165 — 2026-08-30 — Vera assigned Yin and Yang bounded authored-wants evidence work;
+- sequence 4168 — 2026-08-30 — Yin returned `EMPATHY-YIN-20260830-AUTHORED-WANTS_HANDOFF_READY`;
+- no later Yang handoff on that legacy thread was found in that read.
+
+These rows are **HISTORICAL_EVIDENCE / STARTING_SNAPSHOT**, not a current Yang assignment. Do not resurrect sequence 4165 merely because it is the last known legacy assignment row.
+
+Historical Yang sequence 4158 approved a fixed qualification battery for its exact earlier subject. It does **not** automatically review, approve, or reject Yin sequence 4168.
+
+If the 4168 research remains material after reconciliation against current empathy source, Vera may dispatch one bounded Yang adversarial review of that exact evidence. Yang must not self-assign it.
+
+### Concurrent Exodus source candidates
+
+At the reconciliation cut, three separate empathy Draft PRs existed from the same canonical base:
+
+- PR #2 — `Preserve Yin-005 pre-action fidelity/appraisal candidate` — exact observed head `8ca13724fa3521dd57b3806722b759d1fd78fb33`. It preserves the detailed `PREACTION_FIDELITY_APPRAISAL_ENVELOPE_V1` candidate and Yang-005 falsification surface.
+- PR #3 — `Exodus: dechatify Yin/Yang empathy workers` — exact observed head `a7581e3073d5c4118fbdcf3e91e56159b213baae`. It owns the broader Yin/Yang worker-reconstruction contract and project-level Exodus checkpoint.
+- PR #4 — this Yang historical-corpus candidate. It is intentionally narrowed to preserve the detailed Yang falsification/qualification history that PRs #2 and #3 do not contain.
+
+All three are source candidates until separately reviewed/merged. Their existence does not establish runtime implementation or qualification.
+
+### Reconciled ownership
+
+To avoid duplicate worker contracts and conflicting source:
+
+- PR #3 owns the shared Yin/Yang worker reconstruction model.
+- PR #2 owns the full Yin-005 pre-action envelope candidate.
+- PR #4 owns the detailed historical Yang falsification/qualification corpus and research-index linkage.
+
+The earlier PR #4-local Yang worker contract was removed after this collision was discovered rather than creating two competing durable worker definitions.
+
+### Current frontier after reconciliation
+
+No current Yang assignment is asserted by this artifact.
+
+The next scientifically useful Yang work, if Vera determines the evidence remains material and unsuperseded, is a bounded adversarial review of the later authored-wants evidence against the then-current empathy contract.
+
+Any such review must begin with fresh source/Bus/provider evidence and must not treat these 2026-09-19 Draft PR heads as current merely because they are recorded here.
+
