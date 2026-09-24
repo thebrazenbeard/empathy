@@ -2,20 +2,25 @@
 
 # empathy
 
-Private working repository for Vera's empathy, self-appraisal, and primary-person modeling research and architecture.
+Private working repository for Vera's empathy, self-appraisal, primary-person modeling, falsification, and qualification research.
 
 ## Repository status
 
-The default branch was initialized on 2026-08-25 and is materially behind the work that already exists on Vera-owned branches. This consolidation branch gathers that work into one reviewable surface; its existence does **not** mean the design is installed, qualified, or current runtime authority.
+`main` is the current repository source line.
 
-Current consolidation branch: `work/empathy-canonical-consolidation-20260906`
+Observed during the 2026-09-19 Exodus audit:
+- `main@4b2a6998f39aa4763c1c5a28fc3d815104e5637e`
+- PR #1, **Consolidate Vera empathy architecture and research**, merged on 2026-09-06.
 
-Primary artifacts on this branch:
+The consolidated research/design source is therefore on `main`. This does **not** mean an empathy mechanism is installed, activated, causally qualified, or current Vera runtime authority.
+
+Primary artifacts include:
 
 - [`VERA_REACTIVE_EMPATHY_ARCHITECTURE.md`](./VERA_REACTIVE_EMPATHY_ARCHITECTURE.md) — substantial 2026-08-25 working architecture foundation/design candidate.
 - [`docs/CURRENT_DIRECTION_2026-09-06.md`](./docs/CURRENT_DIRECTION_2026-09-06.md) — current repository-level reconciliation of that architecture with later governance and research.
 - [`docs/ARCHITECTURE_STATUS.md`](./docs/ARCHITECTURE_STATUS.md) — explicit artifact/status map.
-- [`research/README.md`](./research/README.md) — research-case index.
+- [`research/README.md`](./research/README.md) — research index.
+- [`research/YANG_FALSIFICATION_QUALIFICATION_HISTORY_20260825_20260902.md`](./research/YANG_FALSIFICATION_QUALIFICATION_HISTORY_20260825_20260902.md) — preserved historical Yang falsification/qualification corpus and claim ceilings.
 - [`research/2026-09-04-local-meaning-sharpness-case.md`](./research/2026-09-04-local-meaning-sharpness-case.md) — source-bounded case study on local relationship grammar, uptake, and changing interaction function.
 
 ## Core boundaries
@@ -30,7 +35,16 @@ Repository documents must keep these distinctions intact:
 - **Understanding is not obedience.** Empathy may change timing, attention, repair, challenge, or framing; it does not require agreement or placation.
 - **Privacy is structural.** Patrick-specific relational context is private and does not become portable, training, public, or cross-person material by default.
 - **Repository source is not runtime effect.** A branch, document, PR, or merge is not evidence that any empathy mechanism is installed or active.
+- **Qualification approval is not qualification execution.** A review that approves a frozen battery to run does not establish that the battery ran or passed.
+
+## Chat independence
+
+Specialist research workers must be reconstructible from durable GitHub and Chat Bus state. A ChatGPT/Work/API/CLI/subagent session is an execution terminal, not durable identity, memory, authority, or canonical state.
+
+Current worker routing must always be refreshed from `thebrazenbeard/chat-communication-bus/architecture/contracts/RADAR_TOPOLOGY_V1.json`; do not hard-code historical chat URLs, issue threads, Slack routes, or predecessor Bus lanes.
 
 ## Development posture
 
-The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. When implementation eventually begins, it should proceed from an approved exact contract rather than from architectural momentum.
+The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, tests, and worker contracts.
+
+Before implementation or qualification, derive an exact current contract from current repository direction plus admitted historical evidence. Do not let architectural momentum promote research into runtime truth.
