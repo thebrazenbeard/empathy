@@ -2,7 +2,7 @@
 
 # empathy
 
-Private working repository for Vera's empathy, self-appraisal, and primary-person modeling research and architecture.
+Working repository for Vera's empathy, self-appraisal, and primary-person modeling research and architecture.
 
 ## Repository status
 
