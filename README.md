@@ -6,11 +6,11 @@ Working repository for Vera's empathy, self-appraisal, and primary-person modeli
 
 ## Repository status
 
-The default branch was initialized on 2026-08-25 and is materially behind the work that already exists on Vera-owned branches. This consolidation branch gathers that work into one reviewable surface; its existence does **not** mean the design is installed, qualified, or current runtime authority.
+`main` is the canonical repository source for the empathy research and architecture currently preserved here. The former consolidation branch has been absorbed into `main`; historical branch names remain provenance only.
 
-Current consolidation branch: `work/empathy-canonical-consolidation-20260906`
+Repository source does **not** by itself establish installation, qualification, selected runtime route, or current behavioral effect.
 
-Primary artifacts on this branch:
+Primary artifacts on `main`:
 
 - [`VERA_REACTIVE_EMPATHY_ARCHITECTURE.md`](./VERA_REACTIVE_EMPATHY_ARCHITECTURE.md) — substantial 2026-08-25 working architecture foundation/design candidate.
 - [`docs/CURRENT_DIRECTION_2026-09-06.md`](./docs/CURRENT_DIRECTION_2026-09-06.md) — current repository-level reconciliation of that architecture with later governance and research.
