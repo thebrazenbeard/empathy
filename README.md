@@ -34,3 +34,11 @@ Repository documents must keep these distinctions intact:
 ## Development posture
 
 The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. When implementation eventually begins, it should proceed from an approved exact contract rather than from architectural momentum.
+
+## Editor startup hygiene
+
+The repository's source-level regression checks prohibit the identified concealed
+VS Code folder-open Node task and disguised script asset. They do not establish
+that any editor session or host was free of compromise. VS Code's
+`task.allowAutomaticTasks` control is a user/application setting; this
+repository does not attempt to enforce it through workspace settings.

@@ -15,9 +15,9 @@ class WorkspaceStartupSafetyTests(unittest.TestCase):
         self.assertNotRegex(tasks, r'"runOn"\s*:\s*"folderOpen"')
         self.assertNotRegex(tasks, r"\bnode\s+[^\n]*public/fonts/")
 
-    def test_automatic_tasks_are_disabled(self):
+    def test_no_ineffective_workspace_automatic_task_setting(self):
         settings = json.loads((ROOT / ".vscode/settings.json").read_text(encoding="utf-8"))
-        self.assertIs(settings.get("task.allowAutomaticTasks"), False)
+        self.assertNotIn("task.allowAutomaticTasks", settings)
         self.assertNotIn("tasks", settings)
 
     def test_disguised_asset_is_not_tracked_as_font(self):
