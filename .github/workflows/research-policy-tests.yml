@@ -1,0 +1,11 @@
+name: Research Policy Tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  synthetic-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run synthetic policy, contract, and startup-safety tests
+        run: python3 -m unittest discover -s tests -v
