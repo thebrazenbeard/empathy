@@ -34,3 +34,7 @@ Repository documents must keep these distinctions intact:
 ## Development posture
 
 The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. When implementation eventually begins, it should proceed from an approved exact contract rather than from architectural momentum.
+
+## Editor startup safety
+
+The active source tree removes a concealed VS Code `folderOpen` Node task and a disguised `public/fonts/fa-solid.lkf` executable. Automatic workspace tasks are disabled, and source-level CI rejects reintroduction. The prior code remains recoverable in Git history. This containment does **not** establish whether it previously executed on a host or that local clones, editor extensions, scheduled tasks, processes, or credentials are clean. Do not run unreviewed historical payloads.
