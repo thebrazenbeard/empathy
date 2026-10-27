@@ -33,7 +33,23 @@ Repository documents must keep these distinctions intact:
 
 ## Development posture
 
-The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. When implementation eventually begins, it should proceed from an approved exact contract rather than from architectural momentum.
+The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. Any runtime integration must proceed from an approved exact contract rather than architectural momentum.
+
+**Publication boundary:** This repository is public. Do not add private relational/person-model evidence or real interaction transcripts to source or test fixtures. Use synthetic cases; private evidence requires a separately governed store and explicit disclosure review. See [current direction](docs/CURRENT_DIRECTION_2026-09-06.md).
+
+### Research policy prototype (candidate branch only)
+
+`empathy_research.policy.choose_policy` is a pure, deterministic **research** selector over explicitly typed `Assessment`, `Evidence`, and `Hypothesis` objects. It returns a response-policy suggestion with a reason code, supporting evidence IDs, opaque same-person superseded-hypothesis IDs, and `authority=NONE` / `persistence=EPHEMERAL`. Weak evidence (below the V0 experimental 0.5 cutoff) cannot force a policy route.
+
+It does **not** read private memory, authenticate identities, interpret arbitrary text, invoke a model, execute an action, or persist decisions. The future host would have to authenticate the person scope, admit/time-bound evidence, govern privacy, and supply a reviewed pre-response integration point; none is established here. Unscoped hypotheses are ineligible; never substitute historical evidence for current consent.
+
+Run the synthetic research and startup-safety checks with:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+A passing suite qualifies only the exact tested source as a bounded policy research candidate, **not** Vera Mono integration, installed empathy, or improved relational outcomes.
 
 ## Editor startup safety
 
