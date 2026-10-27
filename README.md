@@ -33,7 +33,27 @@ Repository documents must keep these distinctions intact:
 
 ## Development posture
 
-The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. When implementation eventually begins, it should proceed from an approved exact contract rather than from architectural momentum.
+The large architecture document is preserved rather than silently rewritten because its provenance matters. Later corrections and findings belong in explicit overlays, research cases, decisions, and tests. Any runtime integration must proceed from an approved exact contract rather than architectural momentum.
+
+**Publication boundary:** This repository is public. Do not add private relational/person-model evidence or real interaction transcripts to source or test fixtures. Use synthetic cases; private evidence requires a separately governed store and explicit disclosure review. See [current direction](docs/CURRENT_DIRECTION_2026-09-06.md).
+
+### Research policy prototype (source only; not deployed)
+
+`empathy_research.policy.choose_policy` is a pure, deterministic **research** selector over explicitly typed `Assessment`, `Evidence`, and `Hypothesis` objects. It returns a response-policy suggestion with a reason code, supporting evidence IDs, opaque same-person superseded-hypothesis IDs, and `authority=NONE` / `persistence=EPHEMERAL`. Weak evidence (below the V0 experimental 0.5 cutoff) cannot force a policy route.
+
+Decision provenance only includes IDs matching `ev_` plus 32 lowercase hexadecimal characters for observations, or `hyp_` plus 32 lowercase hexadecimal characters for hypotheses. Malformed IDs are silently omitted from the decision to prevent accidental raw-text echoes. Hosts must generate unpredictable opaque IDs and keep the private ID-to-evidence mapping outside this module; matching the format alone proves neither authenticity nor privacy. The `HIGH_SCORE` decision band reflects only a caller-supplied numeric threshold (0.8), **not** verified first-person testimony, calibrated psychological probability, or actual feeling.
+
+It does **not** read private memory, authenticate identities, interpret arbitrary text, invoke a model, execute an action, or persist decisions. The future host would have to authenticate the person scope, admit/time-bound evidence, govern privacy, and supply a reviewed pre-response integration point; none is established here. Merely setting an evidence item's `source="current"` is **not** proof of freshness or identity. Unscoped hypotheses are ineligible; never substitute historical evidence for current consent.
+
+The experimental selector now treats a directly scoped correction to stop play as `STOP_PLAY`; conflicting current play reports cannot justify `PRESERVE_PLAY`; and high-stakes routes always signal focused review. High-stakes task requests with nonzero, current, same-person uncertainty about whether a task was actually requested return `CLARIFY_MEANING` pending review. These are conservative routing choices, not calibrated psychological measurements.
+
+Run the synthetic research and startup-safety checks with:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+A passing suite qualifies only the exact tested source as a bounded policy research candidate, **not** Vera Mono integration, installed empathy, or improved relational outcomes.
 
 ## Editor startup safety
 
