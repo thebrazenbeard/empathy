@@ -45,6 +45,16 @@ class PolicyContractTests(unittest.TestCase):
             Evidence("task_request", "task", "calculate", float("nan"),
                      "current", "synthetic-a")
 
+    def test_active_flag_cannot_use_truthy_non_boolean_values(self):
+        for active in ("false", "true", 0, 1, None):
+            with self.subTest(active=active), self.assertRaises(ValueError):
+                Evidence("reciprocal_play", "play_frame", "active", 0.9,
+                         "current", "synthetic-a", active=active)
+        inactive = Evidence("reciprocal_play", "play_frame", "active", 0.9,
+                            "current", "synthetic-a", active=False)
+        result = choose_policy(Assessment("synthetic-a", (inactive,)))
+        self.assertEqual(result.policy, Policy.CLARIFY_MEANING)
+
 
 if __name__ == "__main__":
     unittest.main()

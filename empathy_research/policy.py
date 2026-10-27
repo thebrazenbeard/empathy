@@ -41,6 +41,8 @@ class Evidence:
             raise ValueError("confidence must be finite and between 0 and 1")
         if self.source not in ("current", "historical"):
             raise ValueError("evidence source must be current or historical")
+        if type(self.active) is not bool:
+            raise ValueError("active must be a boolean")
 
 
 @dataclass(frozen=True)
