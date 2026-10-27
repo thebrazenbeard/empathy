@@ -7,6 +7,7 @@ already-installed workstation or extension.
 import json
 from pathlib import Path
 import re
+import tempfile
 import unittest
 
 
@@ -20,7 +21,35 @@ def read_jsonc(path: Path) -> dict:
     return json.loads(re.sub(r",\s*(?=[}\]])", "", text))
 
 
+def folder_open_workspace_tasks(root: Path) -> list[str]:
+    offenders = []
+    for path in root.rglob("*.code-workspace"):
+        if ".git" in path.parts:
+            continue
+        workspace = read_jsonc(path)
+        tasks = workspace.get("tasks", {}).get("tasks", [])
+        if not isinstance(tasks, list):
+            raise ValueError(f"workspace tasks must be an array: {path}")
+        for task in tasks:
+            if task.get("runOptions", {}).get("runOn") == "folderOpen":
+                offenders.append(str(path))
+    return offenders
+
+
 class WorkspaceStartupSafetyTests(unittest.TestCase):
+    def test_no_folder_open_tasks_in_workspace_files(self):
+        # Workspace files can declare tasks separately from .vscode/tasks.json.
+        self.assertEqual(folder_open_workspace_tasks(ROOT), [])
+
+    def test_rejects_workspace_folder_open_task(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "unsafe.code-workspace"
+            path.write_text(
+                '{"tasks":{"tasks":[{"runOptions":{"runOn":"folderOpen"}}]}}',
+                encoding="utf-8",
+            )
+            self.assertEqual(folder_open_workspace_tasks(Path(directory)), [str(path)])
+
     def test_no_folder_open_tasks(self):
         tasks = read_jsonc(ROOT / ".vscode" / "tasks.json")
         self.assertIsInstance(tasks.get("tasks", []), list)

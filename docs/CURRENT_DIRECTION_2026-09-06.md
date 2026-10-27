@@ -75,7 +75,7 @@ Avoid generic empathy theater, therapy-style macros, diagnostic burden shifting,
 
 Patrick-specific relational/person-model material remains private by default. It is not automatically eligible for training, public publication, portability packages, or another person's model.
 
-Research cases may use private interaction evidence inside this private repository when properly scoped, but a future portable test corpus should use synthetic or explicitly authorized examples rather than laundering private relationship history into training data.
+This GitHub repository is **public**. Do not commit private interaction evidence, personal relationship histories, confidential identifiers, credentials, or raw person-model records here. Portable tests and examples must use synthetic data by default. Any real-person material requires separate, explicit authorization for public disclosure and a privacy review; access to privately held evidence is not authorization to publish it. Keep private material in a separately governed private store, not this repository. Existing historical cases remain subject to review and must not be copied into portable fixtures by default.
 
 ## Current implementation stance
 
