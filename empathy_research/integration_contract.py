@@ -123,8 +123,19 @@ def with_historical_conations(
         raise TypeError("typed Empathy Assessment required")
     if not isinstance(assessment.person_id, str) or not assessment.person_id.strip():
         raise ValueError("trusted person scope is required for historical attachment")
+    existing = assessment.historical_evidence
+    if len(existing) > MAX_HISTORY_EVENTS:
+        raise ValueError("historical context exceeds bound")
     material = []
-    seen = set()
+    seen = {
+        item.evidence_id for item in existing
+        if isinstance(item, Evidence)
+        and item.kind == "historical_conation"
+        and item.referent == "history_only"
+        and item.source == "historical"
+        and not item.active
+        and item.scope_person_id == assessment.person_id
+    }
     for index, event in enumerate(events):
         if index >= MAX_HISTORY_EVENTS:
             raise ValueError("Conations historical batch exceeds bound")
@@ -143,17 +154,19 @@ def with_historical_conations(
             date.fromisoformat(day)
         except ValueError as exc:
             raise ValueError("invalid historical event date") from exc
-        event_key = (day, kind, digest)
-        if event_key in seen:
+        event_id = f"conation:{day}:{kind}:{digest}"
+        if event_id in seen:
             continue
-        seen.add(event_key)
+        if len(existing) + len(material) >= MAX_HISTORY_EVENTS:
+            raise ValueError("historical context exceeds bound")
+        seen.add(event_id)
         material.append(Evidence(
             kind="historical_conation", referent="history_only",
             value=kind, confidence=0.0, source="historical",
             scope_person_id=assessment.person_id, active=False,
-            evidence_id=f"conation:{day}:{kind}:{digest}",
+            evidence_id=event_id,
         ))
     return replace(
         assessment,
-        historical_evidence=assessment.historical_evidence + tuple(material),
+        historical_evidence=existing + tuple(material),
     )

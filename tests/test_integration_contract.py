@@ -131,6 +131,20 @@ class IntegrationContractTests(unittest.TestCase):
         )
         self.assertFalse(context.current_evidence)
 
+    def test_repeated_ingress_does_not_duplicate_same_history_event(self):
+        context = with_historical_conations(Assessment(PERSON), (History(),))
+        reattached = with_historical_conations(context, (History(),))
+        self.assertEqual(reattached.historical_evidence, context.historical_evidence)
+
+    def test_total_historical_context_cannot_grow_past_limit(self):
+        first = tuple(History(content_sha256=f"{i:064x}") for i in range(1000))
+        context = with_historical_conations(Assessment(PERSON), first)
+        self.assertEqual(len(context.historical_evidence), 1000)
+        with self.assertRaises(ValueError):
+            with_historical_conations(
+                context, (History(content_sha256="f" * 64),)
+            )
+
     def test_malicious_evidence_identifier_fails_closed(self):
         with self.assertRaises(ValueError):
             response_policy_hint(Assessment(PERSON, current_evidence=(
