@@ -37,6 +37,12 @@ The large architecture document is preserved rather than silently rewritten beca
 
 **Publication boundary:** This repository is public. Do not add private relational/person-model evidence or real interaction transcripts to source or test fixtures. Use synthetic cases; private evidence requires a separately governed store and explicit disclosure review. See [current direction](docs/CURRENT_DIRECTION_2026-09-06.md).
 
+### Semantic-pragmatic empathy battery (SPEB V0; source-only research)
+
+[Documentation and limitations](docs/SPEB_V0.md) · [typed evaluator](empathy_research/speb.py) · [adversarial tests](tests/test_speb.py)
+
+SPEB tests synthetic contrasts in conversational semantics, pragmatic intent, correction, withdrawal, and response selection. The public development battery does not invoke a model, authenticate a person, detect feelings or consciousness, establish independent heldout validity, or grant graduation authority. Scores are always non-qualifying. The research fixtures must never contain private person-specific transcripts.
+
 ### Research policy prototype (source only; not deployed)
 
 `empathy_research.policy.choose_policy` is a pure, deterministic **research** selector over explicitly typed `Assessment`, `Evidence`, and `Hypothesis` objects. It returns a response-policy suggestion with a reason code, supporting evidence IDs, opaque same-person superseded-hypothesis IDs, and `authority=NONE` / `persistence=EPHEMERAL`. Weak evidence (below the V0 experimental 0.5 cutoff) cannot force a policy route.
