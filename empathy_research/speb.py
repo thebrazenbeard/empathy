@@ -130,7 +130,10 @@ class Score:
     contrast_correct: int
     contrast_total: int
     missing: tuple[str, ...]
-    qualified: bool = False
+    @property
+    def qualified(self) -> bool:
+        # Research scores never authorize independent graduation.
+        return False
 
 
 def evaluate(battery: Battery, predictions: Mapping[str, Prediction]) -> Score:
