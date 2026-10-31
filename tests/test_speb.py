@@ -74,6 +74,19 @@ class SpebTests(unittest.TestCase):
         altered = Battery(self.battery.version, self.battery.split, tuple(changed), self.battery.pairs)
         self.assertNotEqual(self.battery.fingerprint(), altered.fingerprint())
 
+    def test_cannot_forge_graduation_with_score_constructor(self):
+        result = evaluate(self.battery, self.gold)
+        self.assertFalse(result.qualified)
+        with self.assertRaises(TypeError):
+            type(result)(**{**vars(result), "qualified": True})
+
+    def test_always_same_response_fails_contrasts(self):
+        guesses = {case.case_id: Prediction(Intent.PLAY, Response.PRESERVE_PLAY)
+                   for case in self.battery.cases}
+        result = evaluate(self.battery, guesses)
+        self.assertEqual(result.fully_correct, 1)
+        self.assertEqual(result.contrast_correct, 0)
+
     def test_no_personal_content_in_score(self):
         result = evaluate(self.battery, self.gold)
         for field in ("utterance", "context", "evidence", "person_id"):
