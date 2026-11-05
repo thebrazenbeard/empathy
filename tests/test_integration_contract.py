@@ -33,6 +33,27 @@ class History:
     evidence_class: str = "HISTORICAL_ONLY"
 
 
+@dataclass(frozen=True)
+class DuckTypedObservation:
+    kind: str = "task_request"
+    referent: str = "task"
+    value: str = "current"
+    confidence: float = 0.99
+    source: str = "current"
+    scope_person_id: str = PERSON
+    active: bool = True
+    evidence_id: str = EVIDENCE_ID
+
+
+@dataclass(frozen=True)
+class DuckTypedHypothesis:
+    referent: str = "joke"
+    value: str = "play"
+    confidence: float = 0.9
+    scope_person_id: str = PERSON
+    hypothesis_id: str = HYPOTHESIS_ID
+
+
 class IntegrationContractTests(unittest.TestCase):
     def test_current_accepted_task_to_advice_only(self):
         hint = response_policy_hint(Assessment(PERSON, current_evidence=(observed(),)))
@@ -156,6 +177,42 @@ class IntegrationContractTests(unittest.TestCase):
             response_policy_hint(Assessment(PERSON, hypotheses=(
                 Hypothesis("meaning", "joking", 0.9, PERSON, "private-text"),
             )))
+
+    def test_duck_typed_current_evidence_cannot_select_response_policy(self):
+        # A source-shaped object must not bypass typed admission and steer a
+        # confident host hint with forged or missing provenance.
+        with self.assertRaises(TypeError):
+            response_policy_hint(Assessment(
+                PERSON, current_evidence=(DuckTypedObservation(),)
+            ))
+
+    def test_duck_typed_hypothesis_cannot_enter_host_policy_adapter(self):
+        with self.assertRaises(TypeError):
+            response_policy_hint(Assessment(
+                PERSON, hypotheses=(DuckTypedHypothesis(),)
+            ))
+
+    def test_duck_typed_historical_evidence_cannot_enter_host_policy_adapter(self):
+        with self.assertRaises(TypeError):
+            response_policy_hint(Assessment(
+                PERSON, historical_evidence=(DuckTypedObservation(),)
+            ))
+
+    def test_blank_current_evidence_identifier_cannot_back_confident_hint(self):
+        with self.assertRaises(ValueError):
+            response_policy_hint(Assessment(
+                PERSON, current_evidence=(observed(evidence_id=""),)
+            ))
+
+    def test_inactive_or_other_person_missing_id_does_not_gain_authority(self):
+        hint = response_policy_hint(Assessment(
+            PERSON, current_evidence=(
+                observed(active=False, evidence_id=""),
+                observed(person=OTHER, evidence_id=""),
+            ),
+        ))
+        self.assertEqual(hint.policy, "CLARIFY_MEANING")
+        self.assertFalse(hint.supporting_evidence_ids)
 
     def test_foreign_person_bad_identifier_does_not_block_scoped_task(self):
         hint = response_policy_hint(Assessment(PERSON, current_evidence=(
