@@ -12,7 +12,7 @@ from datetime import date
 import re
 from typing import Iterable
 
-from .policy import Assessment, Evidence, Policy, choose_policy
+from .policy import Assessment, Evidence, Hypothesis, Policy, choose_policy
 
 
 HINT_SCHEMA = "EMPATHY_RESPONSE_POLICY_HINT_V1"
@@ -56,6 +56,25 @@ def response_policy_hint(assessment: Assessment) -> ResponsePolicyHint:
     """
     if type(assessment) is not Assessment:
         raise TypeError("typed Empathy Assessment required")
+    # Selector input must be exact typed host-admitted records. Duck-typed
+    # objects can influence route selection while evading provenance checks.
+    if any(type(item) is not Evidence for item in assessment.current_evidence):
+        raise TypeError("typed current Empathy Evidence required")
+    if any(type(item) is not Evidence for item in assessment.historical_evidence):
+        raise TypeError("typed historical Empathy Evidence required")
+    if any(type(item) is not Hypothesis for item in assessment.hypotheses):
+        raise TypeError("typed Empathy Hypothesis required")
+    # A current same-person observation that can select a response route must
+    # retain an opaque provenance ID. The selector drops malformed identifiers;
+    # allowing blanks here would yield persuasive advice with no cited source.
+    if any(
+        item.source == "current" and item.active
+        and item.scope_person_id == assessment.person_id
+        and (type(item.evidence_id) is not str
+             or _EVIDENCE_ID.fullmatch(item.evidence_id) is None)
+        for item in assessment.current_evidence
+    ):
+        raise ValueError("current active evidence requires opaque provenance")
     # The policy selector intentionally drops invalid references from its
     # output.  The host-facing adapter also rejects them at ingress so a
     # caller cannot silently pass instruction-bearing provenance fields.
