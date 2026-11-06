@@ -44,12 +44,18 @@ def evaluate_current_task(assessment: Assessment) -> CognitiveDonorResult:
     """
     if type(assessment) is not Assessment:
         raise TypeError("canonical Empathy Assessment required")
+    if (type(assessment.current_evidence) is not tuple
+            or type(assessment.historical_evidence) is not tuple
+            or type(assessment.hypotheses) is not tuple):
+        raise ValueError("all evidence containers must be an immutable tuple")
     if assessment.historical_evidence or assessment.hypotheses:
         raise ValueError("private/historical evidence excluded from donor probe")
     if not assessment.person_id or not assessment.person_id.strip():
         raise ValueError("host-admitted person scope required")
     if not assessment.current_evidence:
         raise ValueError("no current task evidence: no donor value synthesized")
+    seen_ids: set[str] = set()
+    correction_by_referent: dict[str, str] = {}
     for observed in assessment.current_evidence:
         if (type(observed) is not Evidence
                 or observed.source != "current"
@@ -58,6 +64,16 @@ def evaluate_current_task(assessment: Assessment) -> CognitiveDonorResult:
                 or type(observed.evidence_id) is not str
                 or _OPAQUE_EVIDENCE.fullmatch(observed.evidence_id) is None):
             raise ValueError("only active typed current same-person evidence with opaque IDs permitted")
+        if observed.evidence_id in seen_ids:
+            raise ValueError("duplicate evidence ID cannot identify one observation")
+        seen_ids.add(observed.evidence_id)
+        if observed.kind == "direct_correction":
+            if (observed.referent in correction_by_referent
+                    and correction_by_referent[observed.referent] != observed.value):
+                # No host-established turn order exists in Assessment.
+                # Do not silently declare either correction current/latest.
+                raise ValueError("conflicting same-referent corrections require host ordering")
+            correction_by_referent[observed.referent] = observed.value
     selected = response_policy_hint(assessment)
     return CognitiveDonorResult(
         donor="empathy",

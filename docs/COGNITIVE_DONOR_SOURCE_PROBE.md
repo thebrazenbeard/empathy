@@ -6,9 +6,14 @@ calls `choose_policy`; it does not inject a prerecorded policy, lexical sentimen
 heuristic, or made-up scalar discrepancy.
 
 The caller supplies an Empathy `Assessment` containing current evidence scoped to
-one host-admitted person. The probe accepts only typed, active, exact same-person
-current observations with opaque evidence IDs and rejects all historical
-evidence, hypotheses, empty evidence and cross-person input. It does **not**
+one host-admitted person. The probe accepts only an immutable tuple of typed,
+active, exact same-person current observations with **unique** opaque evidence
+IDs. It rejects historical evidence, hypotheses, empty evidence, cross-person
+input, mutable ingress containers, duplicate IDs, and conflicting same-referent
+direct corrections for which no host-established turn order is available. That
+last refusal is not an override of the conservative stop-play policy; a host
+must keep play stopped pending clarification rather than assume resumption.
+It does **not**
 authenticate person identity or observation currentness: even a perfectly typed
 record may be false. No private memory, tools, network, weights, or training
 are touched. No raw evidence text is returned.
@@ -40,7 +45,8 @@ independent source/currentness verification.
   counterfactuals; separately bind tests to a fresh CI run of the PR head.
 - **HOST:** not established. A live trusted host must authenticate the person,
   preserve utterance-versus-quotation scope, derive and admit current
-  observations, and bind opaque evidence IDs to readback.
+  observations, bind unique opaque evidence IDs to readback, and resolve
+  conflicting correction order without silently resurrecting a stopped frame.
 - **INTEGRATION:** not established. No production consumer or five-donor
   advisory invocation is installed; missing Noema/MESO/Volition/Pre-Active
   quantities must remain `UNKNOWN`, not synthetic constants.
