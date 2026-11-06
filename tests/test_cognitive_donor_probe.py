@@ -64,6 +64,41 @@ class CognitiveDonorProbeTests(unittest.TestCase):
                 person_id="fixture-a", current_evidence=current, historical_evidence=current,
             ))
 
+    def test_duplicate_observation_ids_cannot_identify_distinct_sources(self):
+        request = task_case("task_request", "task", "explicit").current_evidence[0]
+        stop = Evidence(
+            "direct_correction", "play_frame", "stop", 0.9, "current",
+            "fixture-a", evidence_id=request.evidence_id,
+        )
+        with self.assertRaisesRegex(ValueError, "duplicate evidence ID"):
+            evaluate_current_task(Assessment(
+                person_id="fixture-a", current_evidence=(request, stop),
+            ))
+
+    def test_mutable_current_list_cannot_change_during_selection(self):
+        request = task_case("task_request", "task", "explicit").current_evidence[0]
+        assessment = Assessment(person_id="fixture-a", current_evidence=[request])
+        with self.assertRaisesRegex(ValueError, "immutable tuple"):
+            evaluate_current_task(assessment)
+
+    def test_opaque_id_collision_same_observation_is_still_rejected(self):
+        request = task_case("task_request", "task", "explicit").current_evidence[0]
+        with self.assertRaisesRegex(ValueError, "duplicate evidence ID"):
+            evaluate_current_task(Assessment(
+                person_id="fixture-a", current_evidence=(request, request),
+            ))
+
+    def test_contradictory_same_referent_corrections_refused_as_unordered(self):
+        stop = task_case("direct_correction", "play_frame", "stop").current_evidence[0]
+        active = Evidence(
+            "direct_correction", "play_frame", "active", 0.9, "current",
+            "fixture-a", evidence_id="ev_" + "b" * 32,
+        )
+        with self.assertRaisesRegex(ValueError, "conflicting same-referent corrections"):
+            evaluate_current_task(Assessment(
+                person_id="fixture-a", current_evidence=(stop, active),
+            ))
+
 
 if __name__ == "__main__":
     unittest.main()
