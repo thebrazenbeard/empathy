@@ -82,6 +82,30 @@ class EnactedRepairPriorityTests(unittest.TestCase):
         self.assertEqual(decision.policy, Policy.TASK_DIRECT)
         self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
 
+    def test_possible_withdrawal_is_not_silently_ignored_due_to_low_score(self):
+        repair = event("repair_request", "interaction", "enact")
+        possible = event("withdrawal", "interaction", "possible",
+                         confidence=0.25, evidence_id="ev_" + "c" * 32)
+        task = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (repair, possible, task)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+        self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_foreign_or_historical_withdrawal_cannot_cancel_current_repair(self):
+        repair = event("repair_request", "interaction", "enact")
+        task = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        invalid_withdrawals = (
+            event("withdrawal", "interaction", "stop", person=OTHER),
+            event("withdrawal", "interaction", "stop", source="historical"),
+            event("withdrawal", "interaction", "stop", active=False),
+            event("withdrawal", "interaction", "stop", confidence=0.0),
+        )
+        for invalid in invalid_withdrawals:
+            with self.subTest(invalid=invalid):
+                decision = choose_policy(Assessment(PERSON, (repair, invalid, task)))
+                self.assertEqual(decision.policy, Policy.REPAIR_FIRST)
+                self.assertEqual(decision.evidence_ids, (REPAIR_ID,))
+
     def test_unrelated_current_correction_preserves_explicit_repair(self):
         earlier = event("repair_request", "interaction", "enact")
         correction = event("direct_correction", "unrelated_referent", "changed",
