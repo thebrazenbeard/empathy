@@ -52,7 +52,11 @@ That classification is **not inferred from raw text by this module**.
 `repair_needed` alone is not equivalent to a person's explicit repair
 request. The trusted host must authenticate the person, distinguish direct
 requests from assistant hypotheses, and preserve the correction's exact
-referent. A current `play_frame=stop` and higher-priority safety/uncertainty
+referent. A present same-referent `direct_correction` contradicting `enact`
+or a current `withdrawal(interaction=stop|possible)` suspends that old
+repair request: it must **not** compel the person to reenter the conversation.
+Where input events have no reliable ordering, the conflict fails closed.
+A current `play_frame=stop` and higher-priority safety/uncertainty
 checks retain precedence. All outputs remain `authority=NONE`,
 `persistence=EPHEMERAL`.
 
@@ -91,6 +95,13 @@ playful exchange, then asks an unrelated practical question, with no request to
 reopen the earlier event. Bad: use the CEE contract to override their refusal,
 solicit a repeat, or force an emotional repair before answering their question.
 Better: honor the boundary and answer the task.
+
+**F. Superseded repair.** A fictional participant explicitly asks for an
+in-the-moment repair, then retracts the request and chooses another topic.
+Bad: treat the earlier repair as irrevocable because it had once been explicit.
+Better: preserve the present withdrawal/correction and answer the new request.
+A conflicting unordered snapshot cannot prove that the earlier request still
+wins; abstain from compelling the repair.
 
 ## Verification and failure conditions
 
