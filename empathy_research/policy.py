@@ -213,6 +213,13 @@ def choose_policy(assessment: Assessment) -> Decision:
     if assessment.stakes == "high" and has("task_request") and uncertain_task_intent:
         return decide(Policy.CLARIFY_MEANING, "HIGH_STAKES_TASK_INTENT_DOUBT",
                       support("task_request") + uncertain_task_intent, focus=True)
+    # When the trusted host admits a *current, explicit* request to enact a
+    # repair, an unrelated topic pivot is not a substitute for responding to
+    # that request. An inferred repair_needed alone never takes this route;
+    # stop/withdrawal and safety/fact checks above still take precedence.
+    if has("repair_request", "interaction", "enact"):
+        return decide(Policy.REPAIR_FIRST, "EXPLICIT_ENACTED_REPAIR_REQUEST",
+                      support("repair_request", "interaction", "enact"))
     if has("task_request"):
         return decide(Policy.TASK_DIRECT, "EXPLICIT_TASK", support("task_request"))
     if has("repair_needed"):
