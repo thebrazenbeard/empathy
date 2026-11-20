@@ -62,6 +62,35 @@ class EnactedRepairPriorityTests(unittest.TestCase):
         self.assertEqual(decision.policy, Policy.STOP_PLAY)
         self.assertEqual(decision.reason, "DIRECT_PLAY_STOP")
 
+    def test_present_withdrawal_of_repair_offer_prevents_stale_repair_priority(self):
+        earlier = event("repair_request", "interaction", "enact")
+        withdrawn = event("withdrawal", "interaction", "stop",
+                          evidence_id="ev_" + "c" * 32)
+        new_topic = event("task_request", "topic", "discuss",
+                          evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (earlier, withdrawn, new_topic)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+        self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_correction_of_repair_intent_prevents_stale_repair_priority(self):
+        earlier = event("repair_request", "interaction", "enact")
+        correction = event("direct_correction", "interaction", "not_requested",
+                           evidence_id="ev_" + "c" * 32)
+        new_topic = event("task_request", "topic", "discuss",
+                          evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (earlier, correction, new_topic)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+        self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_unrelated_current_correction_preserves_explicit_repair(self):
+        earlier = event("repair_request", "interaction", "enact")
+        correction = event("direct_correction", "unrelated_referent", "changed",
+                           evidence_id="ev_" + "c" * 32)
+        topic = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (earlier, correction, topic)))
+        self.assertEqual(decision.policy, Policy.REPAIR_FIRST)
+        self.assertEqual(decision.evidence_ids, (REPAIR_ID,))
+
     def test_speculation_about_repair_does_not_count_as_explicit_request(self):
         topic = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
         speculation = event("repair_request", "interaction", "maybe",
