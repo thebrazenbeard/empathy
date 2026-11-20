@@ -84,3 +84,9 @@ This public repository must not be used as a dumping ground for private person-m
 The tracked tree contains source checks intended to prevent automatic VS Code `folderOpen` execution and executable content masquerading as font assets. Their passing result concerns the inspected checkout only; it does not establish the safety of old revisions, a user's editor configuration, or a deployed host. Do not execute unreviewed historical payloads.
 
 **Status:** source-only research implementation and historical architecture materials. No active model integration, credentialed memory access, live empathy qualification, user-person modeling service, or protected-effect route is established by this repository.
+
+## Workspace startup containment — tracked main source (2026-11-20)
+
+The previously tracked concealed VS Code `folderOpen` Node chain has been removed from this source snapshot: `.vscode/tasks.json` contains no runnable tasks, `.vscode/settings.json` no longer enables automatic tasks or embeds an on-open task, and the obfuscated `.vscode/ini` source payload has been removed. The injected `config.bat` ignore entry was also removed. Historic Git revisions remain intact for investigation.
+
+**Scope:** This is a repository-source containment statement, not proof that a workstation, old checkout, editor extension, user/global VS Code settings, secrets, or prior execution is safe. Never execute suspected historical assets. Recheck a fresh checkout and trusted host state separately before using this as runtime security evidence.
