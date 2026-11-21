@@ -33,6 +33,27 @@ class History:
     evidence_class: str = "HISTORICAL_ONLY"
 
 
+@dataclass(frozen=True)
+class DuckTypedObservation:
+    kind: str = "task_request"
+    referent: str = "task"
+    value: str = "current"
+    confidence: float = 0.99
+    source: str = "current"
+    scope_person_id: str = PERSON
+    active: bool = True
+    evidence_id: str = EVIDENCE_ID
+
+
+@dataclass(frozen=True)
+class DuckTypedHypothesis:
+    referent: str = "joke"
+    value: str = "play"
+    confidence: float = 0.9
+    scope_person_id: str = PERSON
+    hypothesis_id: str = HYPOTHESIS_ID
+
+
 class IntegrationContractTests(unittest.TestCase):
     def test_current_accepted_task_to_advice_only(self):
         hint = response_policy_hint(Assessment(PERSON, current_evidence=(observed(),)))
@@ -156,6 +177,98 @@ class IntegrationContractTests(unittest.TestCase):
             response_policy_hint(Assessment(PERSON, hypotheses=(
                 Hypothesis("meaning", "joking", 0.9, PERSON, "private-text"),
             )))
+
+    def test_duck_typed_current_evidence_cannot_select_response_policy(self):
+        # A source-shaped object must not bypass typed admission and steer a
+        # confident host hint with forged or missing provenance.
+        with self.assertRaises(TypeError):
+            response_policy_hint(Assessment(
+                PERSON, current_evidence=(DuckTypedObservation(),)
+            ))
+
+    def test_duck_typed_hypothesis_cannot_enter_host_policy_adapter(self):
+        with self.assertRaises(TypeError):
+            response_policy_hint(Assessment(
+                PERSON, hypotheses=(DuckTypedHypothesis(),)
+            ))
+
+    def test_duck_typed_historical_evidence_cannot_enter_host_policy_adapter(self):
+        with self.assertRaises(TypeError):
+            response_policy_hint(Assessment(
+                PERSON, historical_evidence=(DuckTypedObservation(),)
+            ))
+
+    def test_blank_current_evidence_identifier_cannot_back_confident_hint(self):
+        with self.assertRaises(ValueError):
+            response_policy_hint(Assessment(
+                PERSON, current_evidence=(observed(evidence_id=""),)
+            ))
+
+    def test_enacted_repair_reaches_host_hint_with_distinct_source_ids(self):
+        repair = observed("repair_request", referent="interaction",
+                          value="enact", evidence_id=EVIDENCE_ID)
+        task = observed("task_request", referent="topic",
+                        value="discuss", evidence_id=CORRECTION_ID)
+        hint = response_policy_hint(Assessment(
+            PERSON, current_evidence=(repair, task)
+        ))
+        self.assertEqual(hint.policy, "REPAIR_FIRST")
+        self.assertEqual(hint.reason_code, "EXPLICIT_ENACTED_REPAIR_REQUEST")
+        self.assertEqual(hint.supporting_evidence_ids, (EVIDENCE_ID,))
+        self.assertFalse(hint.effect_authority)
+        self.assertEqual(hint.persistence, "EPHEMERAL")
+
+    def test_explicit_withdrawal_still_prevents_enacted_repair_hint(self):
+        repair = observed("repair_request", referent="interaction",
+                          value="enact", evidence_id=EVIDENCE_ID)
+        withdrawn = observed("withdrawal", referent="interaction",
+                             value="stop", evidence_id=CORRECTION_ID)
+        task = observed("task_request", referent="topic",
+                        value="discuss", evidence_id="ev_" + "3" * 32)
+        hint = response_policy_hint(Assessment(
+            PERSON, current_evidence=(repair, withdrawn, task)
+        ))
+        self.assertEqual(hint.policy, "TASK_DIRECT")
+        self.assertEqual(hint.supporting_evidence_ids, ("ev_" + "3" * 32,))
+        self.assertEqual(hint.authority, "NONE")
+
+    def test_conflicting_current_evidence_cannot_share_one_provenance_id(self):
+        # One host-issued ID cannot attest two different observations.
+        task = observed()
+        contradiction = observed("unsupported_claim", referent="external_fact",
+                                 value="unverified", evidence_id=EVIDENCE_ID)
+        with self.assertRaisesRegex(ValueError, "duplicate current evidence"):
+            response_policy_hint(Assessment(
+                PERSON, current_evidence=(task, contradiction)
+            ))
+
+    def test_replayed_identical_current_event_is_not_double_admitted(self):
+        task = observed()
+        with self.assertRaisesRegex(ValueError, "duplicate current evidence"):
+            response_policy_hint(Assessment(
+                PERSON, current_evidence=(task, task)
+            ))
+
+    def test_same_identifier_in_foreign_inactive_history_stays_inert(self):
+        scoped = observed()
+        foreign = observed(person=OTHER, evidence_id=EVIDENCE_ID)
+        inactive = observed(active=False, evidence_id=EVIDENCE_ID)
+        historical = observed(source="historical", evidence_id=EVIDENCE_ID)
+        hint = response_policy_hint(Assessment(
+            PERSON, current_evidence=(scoped, foreign, inactive, historical)
+        ))
+        self.assertEqual(hint.policy, "TASK_DIRECT")
+        self.assertEqual(hint.supporting_evidence_ids, (EVIDENCE_ID,))
+
+    def test_inactive_or_other_person_missing_id_does_not_gain_authority(self):
+        hint = response_policy_hint(Assessment(
+            PERSON, current_evidence=(
+                observed(active=False, evidence_id=""),
+                observed(person=OTHER, evidence_id=""),
+            ),
+        ))
+        self.assertEqual(hint.policy, "CLARIFY_MEANING")
+        self.assertFalse(hint.supporting_evidence_ids)
 
     def test_foreign_person_bad_identifier_does_not_block_scoped_task(self):
         hint = response_policy_hint(Assessment(PERSON, current_evidence=(
