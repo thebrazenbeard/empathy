@@ -130,9 +130,12 @@ def choose_policy(assessment: Assessment) -> Decision:
     corrections = tuple(item for item in admitted if item.kind == "direct_correction")
     # A fresh first-person correction supersedes contradicted *inferences* for
     # its referent. It cannot erase external fact-checking or unrelated tasks.
+    # A present same-referent correction may withdraw an earlier explicit
+    # repair request. The trusted host must admit and scope that correction;
+    # we never revive a contradicted request from an earlier turn.
     inferred_kinds = {
         "reciprocal_play", "celebration", "repair_needed", "lexical_tone",
-        "task_request", "withdrawal", "ambiguous",
+        "task_request", "withdrawal", "ambiguous", "repair_request",
     }
     current = tuple(
         item for item in admitted
@@ -213,6 +216,21 @@ def choose_policy(assessment: Assessment) -> Decision:
     if assessment.stakes == "high" and has("task_request") and uncertain_task_intent:
         return decide(Policy.CLARIFY_MEANING, "HIGH_STAKES_TASK_INTENT_DOUBT",
                       support("task_request") + uncertain_task_intent, focus=True)
+    # When the trusted host admits a *current, explicit* request to enact a
+    # repair, an unrelated topic pivot is not a substitute for responding to
+    # that request. An inferred repair_needed alone never takes this route;
+    # stop/withdrawal and safety/fact checks above still take precedence.
+    # Current, same-person withdrawal of this interaction wins over a prior
+    # explicit request. With no event ordering in Assessment, conflicting
+    # active requests and withdrawals fail closed rather than force a repair.
+    repair_withdrawn = any(
+        item.kind == "withdrawal" and item.referent == "interaction"
+        and item.value in ("stop", "possible") and item.confidence > 0.0
+        for item in observed
+    )
+    if has("repair_request", "interaction", "enact") and not repair_withdrawn:
+        return decide(Policy.REPAIR_FIRST, "EXPLICIT_ENACTED_REPAIR_REQUEST",
+                      support("repair_request", "interaction", "enact"))
     if has("task_request"):
         return decide(Policy.TASK_DIRECT, "EXPLICIT_TASK", support("task_request"))
     if has("repair_needed"):

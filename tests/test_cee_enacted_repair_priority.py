@@ -1,0 +1,127 @@
+"""Synthetic CEE regression: a requested relational repair is not just a task pivot.
+
+This selector cannot enact empathy, authenticate a speaker, or read minds.
+Only explicitly host-admitted, person-scoped, fresh evidence may demand
+REPAIR_FIRST ahead of an otherwise unrelated current topic request.
+"""
+
+import unittest
+
+from empathy_research.policy import Assessment, Evidence, Policy, choose_policy
+
+PERSON = "synthetic-person"
+OTHER = "synthetic-other"
+REPAIR_ID = "ev_" + "a" * 32
+TOPIC_ID = "ev_" + "b" * 32
+
+
+def event(kind, referent, value, *, person=PERSON, source="current",
+          active=True, confidence=1.0, evidence_id=REPAIR_ID):
+    return Evidence(kind=kind, referent=referent, value=value,
+                    confidence=confidence, source=source, active=active,
+                    scope_person_id=person, evidence_id=evidence_id)
+
+
+class EnactedRepairPriorityTests(unittest.TestCase):
+    def test_explicit_enacted_repair_request_precedes_unrelated_topic(self):
+        request = event("repair_request", "interaction", "enact")
+        topic = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (request, topic)))
+        self.assertEqual(decision.policy, Policy.REPAIR_FIRST)
+        self.assertEqual(decision.reason, "EXPLICIT_ENACTED_REPAIR_REQUEST")
+        self.assertEqual(decision.evidence_ids, (REPAIR_ID,))
+        self.assertEqual(decision.authority, "NONE")
+        self.assertEqual(decision.persistence, "EPHEMERAL")
+
+    def test_unrequested_inferred_repair_does_not_displace_explicit_task(self):
+        inferred = event("repair_needed", "interaction", "possible")
+        task = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (inferred, task)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+
+    def test_historical_foreign_or_inactive_request_cannot_override_topic(self):
+        topic = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        cases = (
+            event("repair_request", "interaction", "enact", source="historical"),
+            event("repair_request", "interaction", "enact", person=OTHER),
+            event("repair_request", "interaction", "enact", active=False),
+            event("repair_request", "interaction", "enact", confidence=0.0),
+        )
+        for invalid in cases:
+            with self.subTest(source=invalid.source, person=invalid.scope_person_id,
+                              active=invalid.active, confidence=invalid.confidence):
+                decision = choose_policy(Assessment(PERSON, (topic, invalid)))
+                self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+                self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_current_play_stop_still_outranks_enacted_repair(self):
+        request = event("repair_request", "interaction", "enact")
+        stopped = event("direct_correction", "play_frame", "stop",
+                        evidence_id="ev_" + "c" * 32)
+        decision = choose_policy(Assessment(PERSON, (request, stopped)))
+        self.assertEqual(decision.policy, Policy.STOP_PLAY)
+        self.assertEqual(decision.reason, "DIRECT_PLAY_STOP")
+
+    def test_present_withdrawal_of_repair_offer_prevents_stale_repair_priority(self):
+        earlier = event("repair_request", "interaction", "enact")
+        withdrawn = event("withdrawal", "interaction", "stop",
+                          evidence_id="ev_" + "c" * 32)
+        new_topic = event("task_request", "topic", "discuss",
+                          evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (earlier, withdrawn, new_topic)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+        self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_correction_of_repair_intent_prevents_stale_repair_priority(self):
+        earlier = event("repair_request", "interaction", "enact")
+        correction = event("direct_correction", "interaction", "not_requested",
+                           evidence_id="ev_" + "c" * 32)
+        new_topic = event("task_request", "topic", "discuss",
+                          evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (earlier, correction, new_topic)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+        self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_possible_withdrawal_is_not_silently_ignored_due_to_low_score(self):
+        repair = event("repair_request", "interaction", "enact")
+        possible = event("withdrawal", "interaction", "possible",
+                         confidence=0.25, evidence_id="ev_" + "c" * 32)
+        task = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (repair, possible, task)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+        self.assertEqual(decision.evidence_ids, (TOPIC_ID,))
+
+    def test_foreign_or_historical_withdrawal_cannot_cancel_current_repair(self):
+        repair = event("repair_request", "interaction", "enact")
+        task = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        invalid_withdrawals = (
+            event("withdrawal", "interaction", "stop", person=OTHER),
+            event("withdrawal", "interaction", "stop", source="historical"),
+            event("withdrawal", "interaction", "stop", active=False),
+            event("withdrawal", "interaction", "stop", confidence=0.0),
+        )
+        for invalid in invalid_withdrawals:
+            with self.subTest(invalid=invalid):
+                decision = choose_policy(Assessment(PERSON, (repair, invalid, task)))
+                self.assertEqual(decision.policy, Policy.REPAIR_FIRST)
+                self.assertEqual(decision.evidence_ids, (REPAIR_ID,))
+
+    def test_unrelated_current_correction_preserves_explicit_repair(self):
+        earlier = event("repair_request", "interaction", "enact")
+        correction = event("direct_correction", "unrelated_referent", "changed",
+                           evidence_id="ev_" + "c" * 32)
+        topic = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        decision = choose_policy(Assessment(PERSON, (earlier, correction, topic)))
+        self.assertEqual(decision.policy, Policy.REPAIR_FIRST)
+        self.assertEqual(decision.evidence_ids, (REPAIR_ID,))
+
+    def test_speculation_about_repair_does_not_count_as_explicit_request(self):
+        topic = event("task_request", "topic", "discuss", evidence_id=TOPIC_ID)
+        speculation = event("repair_request", "interaction", "maybe",
+                            evidence_id=REPAIR_ID)
+        decision = choose_policy(Assessment(PERSON, (topic, speculation)))
+        self.assertEqual(decision.policy, Policy.TASK_DIRECT)
+
+
+if __name__ == "__main__":
+    unittest.main()
