@@ -183,9 +183,16 @@ def choose_policy(assessment: Assessment) -> Decision:
     if has("direct_correction", "play_frame", "stop"):
         return decide(Policy.STOP_PLAY, "DIRECT_PLAY_STOP",
                       support("direct_correction", "play_frame", "stop"))
-    if has("withdrawal", "play_frame", "stop"):
-        return decide(Policy.STOP_PLAY, "CURRENT_WITHDRAWAL",
-                      support("withdrawal", "play_frame", "stop"))
+    # Contradictory current records have no chronology here. A correction can
+    # retire an inference, but cannot silently establish renewed participation
+    # while a same-frame stop is still admitted and active. The host must resolve
+    # currentness before admitting a later unambiguous change.
+    admitted_stops = tuple(item for item in admitted
+                           if item.kind == "withdrawal"
+                           and item.referent == "play_frame"
+                           and item.value == "stop")
+    if admitted_stops:
+        return decide(Policy.STOP_PLAY, "CURRENT_WITHDRAWAL", admitted_stops)
     possible_stop = tuple(
         item for item in uncertain_withdrawals
         if any(play.referent == item.referent for play in support("reciprocal_play"))
